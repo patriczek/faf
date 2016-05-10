@@ -18,6 +18,7 @@ from pyfaf.storage import (Build,
                            OpSysReleaseComponent,
                            OpSysReleaseComponentAssociate,
                            Package,
+                           ReportHash,
                            ReportBz,
                            ReportContactEmail,
                            ReportOpSysRelease,
@@ -287,8 +288,34 @@ def load_packages(db, report_id, package_type=None):
     return known_packages.union(unknown_packages).all()
 
 
+@reports.route("/items/", methods=['PUT', 'POST', 'GET'])  # TODO remove GET
+def items():
+    data = dict()
+
+    if request.method == "POST":
+        post_data = request.get_json()
+    else:
+        # TODO - Remove just testing data and throw 405
+        post_data = ['86f8656d84eaf095d11efd86a1c02f1b5d3091a9',
+                     '4a52aa46d27dda36e486c55cbff91c76594b941f']
+
+        for report_hash in post_data:
+            report = (db.session.query(Report)
+                        .join(ReportHash)
+                        .filter(ReportHash.hash == report_hash)
+                        .first())
+
+            if report is not None:
+                data[report_hash] = item(report.id, True)
+
+    if request_wants_json():
+        return jsonify(data)
+    else:
+        return jsonify(data) # str(data)
+
+
 @reports.route("/<int:report_id>/")
-def item(report_id):
+def item(report_id, want_object=False):
     result = (db.session.query(Report, OpSysComponent)
               .join(OpSysComponent)
               .filter(Report.id == report_id)
@@ -373,6 +400,9 @@ def item(report_id):
                    package_counts=package_counts,
                    backtrace=backtrace,
                    contact_emails=contact_emails)
+
+    if want_object:
+        return forward
 
     if request_wants_json():
         return jsonify(forward)
