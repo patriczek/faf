@@ -299,19 +299,19 @@ def items():
         post_data = ['86f8656d84eaf095d11efd86a1c02f1b5d3091a9',
                      '4a52aa46d27dda36e486c55cbff91c76594b941f']
 
-        for report_hash in post_data:
-            report = (db.session.query(Report)
-                        .join(ReportHash)
-                        .filter(ReportHash.hash == report_hash)
-                        .first())
+    for report_hash in post_data:
+        report = (db.session.query(Report)
+                    .join(ReportHash)
+                    .filter(ReportHash.hash == report_hash)
+                    .first())
 
-            if report is not None:
-                data[report_hash] = item(report.id, True)
+        if report is not None:
+            data[report_hash] = item(report.id, True)
 
     if request_wants_json():
         return jsonify(data)
     else:
-        return jsonify(data) # str(data)
+        return jsonify(data)  # str(data)
 
 
 @reports.route("/<int:report_id>/")
@@ -385,8 +385,8 @@ def item(report_id, want_object=False):
     if is_maintainer:
         contact_emails = [email_address for (email_address, ) in
                           (db.session.query(ContactEmail.email_address)
-                                     .join(ReportContactEmail)
-                                     .filter(ReportContactEmail.report == report))]
+                           .join(ReportContactEmail)
+                           .filter(ReportContactEmail.report == report))]
 
     forward = dict(report=report,
                    component=component,
@@ -402,6 +402,10 @@ def item(report_id, want_object=False):
                    contact_emails=contact_emails)
 
     if want_object:
+        if len(forward['report'].bugs) > 0:
+            forward['bugs'] = []
+            for bug in forward['report'].bugs:
+                forward['bugs'].append(bug)
         return forward
 
     if request_wants_json():
