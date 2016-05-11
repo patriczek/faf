@@ -93,5 +93,6 @@ class MantisBug(GenericTable):
             'external_id': self.external_id,
             'tracker_id': self.tracker_id,
             'opsysrelease_id': self.opsysrelease_id,
-            'component_id': self.component_id
+            'component_id': self.component_id,
+            'type': 'MANTIS'
         }
