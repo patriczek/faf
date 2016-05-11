@@ -393,19 +393,26 @@ def item(report_id, want_object=False):
                    releases=metric(releases),
                    arches=metric(arches),
                    modes=metric(modes),
+
+
+                   contact_emails=contact_emails)
+    '''
                    daily_history=daily_history,
                    weekly_history=weekly_history,
                    monthly_history=monthly_history,
                    crashed_packages=packages,
                    package_counts=package_counts,
                    backtrace=backtrace,
-                   contact_emails=contact_emails)
+                   '''
 
     if want_object:
         if len(forward['report'].bugs) > 0:
             forward['bugs'] = []
             for bug in forward['report'].bugs:
-                forward['bugs'].append(bug)
+                try:
+                    forward['bugs'].append(bug.serialize)
+                except:
+                    continue
         return forward
 
     if request_wants_json():
