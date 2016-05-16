@@ -398,9 +398,8 @@ def item(report_id, want_object=False):
                       .first())
 
     if probably_fixed:
-        tmp_dict = dict()
-        tmp_dict['probably_fixed'] = probably_fixed.ProblemOpSysRelease.serialize
-        tmp_dict['probably_fixed']['probable_fix_build'] = probably_fixed.Build.serialize
+        tmp_dict = probably_fixed.ProblemOpSysRelease.serialize
+        tmp_dict['probable_fix_build'] = probably_fixed.Build.serialize
         probably_fixed = tmp_dict
 
     forward = dict(report=report,
