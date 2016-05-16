@@ -98,7 +98,7 @@ class BzBug(GenericTable):
             'resolution': self.resolution,
             'duplicate': self.duplicate,
             'creation_time': self.creation_time,
-            'last_change_time' : self.last_change_time,
+            'last_change_time': self.last_change_time,
             'tracker_id': self.tracker_id,
             'opsysrelease_id': self.opsysrelease_id,
             'component_id': self.component_id,

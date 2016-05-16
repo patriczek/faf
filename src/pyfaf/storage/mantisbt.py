@@ -89,7 +89,7 @@ class MantisBug(GenericTable):
             'resolution': self.resolution,
             'duplicate_id': self.duplicate_id,
             'creation_time': self.creation_time,
-            'last_change_time' : self.last_change_time,
+            'last_change_time': self.last_change_time,
             'external_id': self.external_id,
             'tracker_id': self.tracker_id,
             'opsysrelease_id': self.opsysrelease_id,

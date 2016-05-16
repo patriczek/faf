@@ -31,6 +31,8 @@ from pyfaf.storage import (Build,
                            ReportUnknownPackage,
                            ReportBacktrace,
                            UnknownOpSys,
+                           ProblemOpSysRelease,
+                           Problem,
                            )
 from pyfaf.queries import (get_report,
                            get_unknown_opsys,
@@ -388,22 +390,32 @@ def item(report_id, want_object=False):
                            .join(ReportContactEmail)
                            .filter(ReportContactEmail.report == report))]
 
+    probably_fixed = (db.session.query(ProblemOpSysRelease, Build)
+                      .join(Problem)
+                      .join(Report)
+                      .join(Build)
+                      .filter(Report.id == report_id)
+                      .first())
+
+    if probably_fixed:
+        tmp_dict = dict()
+        tmp_dict['probably_fixed'] = probably_fixed.ProblemOpSysRelease.serialize
+        tmp_dict['probably_fixed']['probable_fix_build'] = probably_fixed.Build.serialize
+        probably_fixed = tmp_dict
+
     forward = dict(report=report,
+                   probably_fixed=probably_fixed,
                    component=component,
                    releases=metric(releases),
                    arches=metric(arches),
                    modes=metric(modes),
-
-
-                   contact_emails=contact_emails)
-    '''
                    daily_history=daily_history,
                    weekly_history=weekly_history,
                    monthly_history=monthly_history,
                    crashed_packages=packages,
                    package_counts=package_counts,
                    backtrace=backtrace,
-                   '''
+                   contact_emails=contact_emails)
 
     if want_object:
         if len(forward['report'].bugs) > 0:
