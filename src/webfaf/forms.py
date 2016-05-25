@@ -20,7 +20,7 @@ from wtforms import (Form,
 from wtforms.ext.sqlalchemy.fields import (QuerySelectMultipleField,
                                            QuerySelectField)
 
-from pyfaf.storage import OpSysRelease, OpSysComponent, Report, KernelTaintFlag
+from pyfaf.storage import OpSysRelease, OpSysComponent, Report, KernelTaintFlag, OpSys
 from pyfaf.storage.opsys import AssociatePeople, Arch
 from pyfaf.problemtypes import problemtypes
 from pyfaf.bugtrackers import bugtrackers
@@ -116,6 +116,14 @@ releases_multiselect = QuerySelectMultipleField(
                            .all()),
     get_pk=lambda a: a.id, get_label=lambda a: str(a))
 
+opsys_multiselect = QuerySelectMultipleField(
+    "Opsys",
+    query_factory=lambda: (db.session.query(OpSys)
+                           .order_by(OpSys.name)
+                           .all()),
+    get_pk=lambda a: a.name, get_label=lambda a: str(a))
+
+
 
 arch_multiselect = QuerySelectMultipleField(
     "Architecture",
@@ -151,6 +159,8 @@ solution_checkbox = BooleanField("Solution")
 
 class ProblemFilterForm(Form):
     opsysreleases = releases_multiselect
+
+    opsys = opsys_multiselect
 
     component_names = TextField()
 
