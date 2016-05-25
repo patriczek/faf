@@ -6,6 +6,7 @@ from pyfaf.storage import (Arch,
                            BuildComponent,
                            BzBug,
                            MantisBug,
+                           OpSys,
                            OpSysComponent,
                            OpSysRelease,
                            OpSysReleaseComponent,
@@ -43,7 +44,6 @@ from webfaf_main import db, flask_cache, app
 from forms import ProblemFilterForm, BacktraceDiffForm, component_names_to_ids
 from utils import Pagination, request_wants_json, metric, is_problem_maintainer
 
-
 def query_problems(db, hist_table, hist_column,
                    opsysrelease_ids=[], component_ids=[],
                    associate_id=None, arch_ids=[], exclude_taintflag_ids=[],
@@ -52,7 +52,7 @@ def query_problems(db, hist_table, hist_column,
                    since_version=None, since_release=None,
                    to_version=None, to_release=None,
                    probable_fix_osr_ids=[], bug_filter=None,
-                   limit=None, offset=None):
+                   limit=None, offset=None, opsys=None):
     """
     Return problems ordered by history counts
     """
@@ -64,6 +64,9 @@ def query_problems(db, hist_table, hist_column,
     if opsysrelease_ids:
         rank_query = rank_query.filter(
             hist_table.opsysrelease_id.in_(opsysrelease_ids))
+
+    if opsys:
+        rank_query = rank_query.join(OpSysRelease).join(OpSys).filter(OpSys.name.in_(opsys))
 
     if rank_filter_fn:
         rank_query = rank_filter_fn(rank_query)
@@ -356,6 +359,8 @@ def get_problems(filter_form, pagination):
     probable_fix_osr_ids = [
         osr.id for osr in (filter_form.probable_fix_osrs.data or [])]
 
+    opsys = [op.name for op in (filter_form.opsys.data or [])]
+
     p = query_problems(db,
                        hist_table,
                        hist_field,
@@ -377,6 +382,7 @@ def get_problems(filter_form, pagination):
                        to_release=filter_form.to_release.data,
                        probable_fix_osr_ids=probable_fix_osr_ids,
                        bug_filter=filter_form.bug_filter.data,
+                       opsys=opsys,
                        limit=pagination.limit,
                        offset=pagination.offset)
     return p
@@ -405,6 +411,7 @@ def list():
     pagination = Pagination(request)
 
     filter_form = ProblemFilterForm(request.args)
+
     if filter_form.validate():
         if request_wants_json():
             p = get_problems(filter_form, pagination)
@@ -417,6 +424,7 @@ def list():
                                    problem_count=problem_count,
                                    filter_form=filter_form,
                                    pagination=pagination)
+
     else:
         p = []
 
@@ -430,8 +438,9 @@ def list():
                            pagination=pagination)
 
 
+
 @problems.route("/<int:problem_id>/")
-def item(problem_id):
+def item(problem_id, want_object=False):
     problem = db.session.query(Problem).filter(
         Problem.id == problem_id).first()
 
@@ -526,13 +535,27 @@ def item(problem_id):
         a += d
     bt_hash_qs = "&".join(bt_hashes_limited)
 
+    probably_fixed = (db.session.query(ProblemOpSysRelease, Build)
+                      .join(Build)
+                      .filter(ProblemOpSysRelease.problem_id == problem_id)
+                      .first())
+
+    if probably_fixed:
+        tmp_dict = probably_fixed.ProblemOpSysRelease.serialize
+        tmp_dict['probable_fix_build'] = probably_fixed.Build.serialize
+        probably_fixed = tmp_dict
+
     forward = {"problem": problem,
+               "probably_fixed": probably_fixed,
                "osreleases": metric(osreleases),
                "arches": metric(arches),
                "exes": metric(exes),
                "package_counts": package_counts,
                "bt_hash_qs": bt_hash_qs
                }
+
+    if want_object:
+        return forward
 
     if request_wants_json():
         return jsonify(forward)
@@ -584,6 +607,15 @@ def bthash_forward(bthash=None):
                 return redirect(url_for("problems.item",
                                         problem_id=problems[0].id))
             else:
+                if request_wants_json():
+                    problem_list = []
+                    for problem in problems:
+                        problem_list.append(item(problem.id, True))
+
+                    forward = {"multiple": problem_list}
+
+                    return jsonify(forward)
+
                 return render_template("problems/multiple_bthashes.html",
                                        problems=problems)
         else:
