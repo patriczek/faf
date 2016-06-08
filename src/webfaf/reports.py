@@ -7,6 +7,7 @@ import urllib
 
 from collections import defaultdict
 from operator import itemgetter
+
 from pyfaf.storage import (Build,
                            BzBug,
                            ContactEmail,
@@ -48,6 +49,7 @@ from pyfaf.ureport import ureport2
 from pyfaf.solutionfinders import find_solution
 from pyfaf.common import FafError
 from pyfaf.problemtypes import problemtypes
+from pyfaf import queries
 from flask import (Blueprint, render_template, request, abort, redirect,
                    url_for, flash, jsonify, g)
 from sqlalchemy import literal, desc
@@ -297,23 +299,60 @@ def items():
     if request.method == "POST":
         post_data = request.get_json()
     else:
-        # TODO - Remove just testing data and throw 405
-        post_data = ['86f8656d84eaf095d11efd86a1c02f1b5d3091a9',
-                     '4a52aa46d27dda36e486c55cbff91c76594b941f']
+        return abort(405)
 
     for report_hash in post_data:
         report = (db.session.query(Report)
-                    .join(ReportHash)
-                    .filter(ReportHash.hash == report_hash)
-                    .first())
+                  .join(ReportHash)
+                  .filter(ReportHash.hash == report_hash)
+                  .first())
 
         if report is not None:
             data[report_hash] = item(report.id, True)
 
-    if request_wants_json():
-        return jsonify(data)
+    return jsonify(data)
+
+
+@reports.route("/get_hash/", endpoint="get_hash")
+@reports.route("/get_hash/<os>/", endpoint="os")
+@reports.route("/get_hash/<os>/<release>", endpoint="release")
+@reports.route("/get_hash/<os>/<release>/<since>", endpoint="since")
+@reports.route("/get_hash/<os>/<release>/<since>/<to>", endpoint="to")
+def get_hash(os=None, release=None, since=None, to=None):
+    if to:
+        to = datetime.datetime.strptime(to, "%Y-%m-%d")
+        since = datetime.datetime.strptime(since, "%Y-%m-%d")
+
+        report_hash = queries.get_all_report_hashes(db, opsys=os,
+                                                    opsys_releases=release,
+                                                    date_from=since,
+                                                    date_to=to)
+
+    elif since:
+        since = datetime.datetime.strptime(since, "%Y-%m-%d")
+
+        report_hash = queries.get_all_report_hashes(db, opsys=os,
+                                                    opsys_releases=release,
+                                                    date_from=since)
+
+    elif release:
+        report_hash = queries.get_all_report_hashes(db, opsys=os,
+                                                    opsys_releases=release)
+
+    elif os:
+        report_hash = queries.get_all_report_hashes(db, opsys=os)
     else:
-        return jsonify(data)  # str(data)
+        report_hash = queries.get_all_report_hashes(db)
+
+    r_hash = []
+
+    for item in report_hash:
+        r_hash.append(item.hash)
+
+    if request_wants_json():
+        return jsonify({"data": r_hash})
+    else:
+        abort(405)
 
 
 @reports.route("/<int:report_id>/")
@@ -416,6 +455,9 @@ def item(report_id, want_object=False):
                    backtrace=backtrace,
                    contact_emails=contact_emails)
 
+    forward['error_name'] = report.error_name
+    forward['oops'] = report.oops
+
     if want_object:
         if len(forward['report'].bugs) > 0:
             forward['bugs'] = []
@@ -426,7 +468,8 @@ def item(report_id, want_object=False):
                     continue
         return forward
 
-    if request_wants_json():
+    if request_wants_json() or True:
+
         return jsonify(forward)
 
     forward["is_maintainer"] = is_maintainer
@@ -762,7 +805,6 @@ def new():
 
     return render_template("reports/new.html",
                            form=form)
-
 
 @reports.route("/attach/", methods=("GET", "POST"))
 def attach():
