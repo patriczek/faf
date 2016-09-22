@@ -9,6 +9,7 @@ pluginconf_DATA = \
     fedorabz.conf \
     fedmsg.conf \
     java.conf \
+    javascript.conf \
     kerneloops.conf \
     pull-reports.conf \
     python.conf \

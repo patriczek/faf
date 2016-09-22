@@ -128,6 +128,14 @@ Requires: satyr-python >= 0.16
 %description problem-ruby
 A plugin for %{name} handling ruby scripts problems.
 
+%package problem-javascript
+Summary: %{name}'s javascript plugin
+Requires: %{name} = %{faf_version}
+Requires: satyr-python >= 0.16
+
+%description problem-javascript
+A plugin for %{name} handling javascript problems.
+
 %package yum
 Summary: %{name}'s yum plugin
 Requires: %{name} = %{faf_version}
@@ -772,6 +780,10 @@ fi
 %files problem-ruby
 %config(noreplace) %{_sysconfdir}/faf/plugins/ruby.conf
 %{python_sitelib}/pyfaf/problemtypes/ruby.py*
+
+%files problem-javascript
+%config(noreplace) %{_sysconfdir}/faf/plugins/javascript.conf
+%{python_sitelib}/pyfaf/problemtypes/javascript.py*
 
 %files yum
 %config(noreplace) %{_sysconfdir}/faf/plugins/yum.conf
