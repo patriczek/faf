@@ -119,7 +119,10 @@ class Report(GenericTable):
     @property
     def error_name(self):
         if self.type == "core":
-            return signal2name(self.errname, with_number=True)
+            try:
+                return signal2name(self.errname, with_number=True)
+            except:
+                return None
         elif self.type == "python":
             if len(self.errname) > 0 and (self.errname[0] in ascii_uppercase
                                           or "." in self.errname):
