@@ -37,15 +37,17 @@ class FedmsgNotify(Action):
                                  "dev")
 
     def run(self, cmdline, db):
-        levels = tuple(10**n for n in range(7))
+        levels = (10, 50, 100, 500, 1000, 5000, 10000, 50000, 100000, 500000, 1000000)
         fedmsg.init(name=self.fedmsg_name, environment=self.fedmsg_environment)
+
         if cmdline.reports:
             # Sum of counts until yesterday
             q_yesterday = (
                 db.session
                 .query(Report.id.label("y_report_id"),
-                       func.sum(ReportHistoryDaily.count).label("sum_yesterday"))
+                       func.sum(ReportHistoryDaily.unique).label("sum_yesterday"))
                 .outerjoin(ReportHistoryDaily)
+                .filter(ReportHistoryDaily.day < cmdline.date)
                 .filter(ReportHistoryDaily.day < cmdline.date)
                 .group_by(Report.id)
                 .subquery()
@@ -54,12 +56,13 @@ class FedmsgNotify(Action):
             q_today = (
                 db.session
                 .query(Report.id.label("t_report_id"),
-                       func.sum(ReportHistoryDaily.count).label("sum_today"))
+                       func.sum(ReportHistoryDaily.unique).label("sum_today"))
                 .outerjoin(ReportHistoryDaily)
                 .filter(ReportHistoryDaily.day <= cmdline.date)
                 .group_by(Report.id)
                 .subquery()
                 )
+
             q = (db.session.query(Report,
                                   q_today.c.sum_today,
                                   q_yesterday.c.sum_yesterday)
@@ -84,7 +87,7 @@ class FedmsgNotify(Action):
                             "function": db_report.crash_function,
                             "components": [db_report.component.name],
                             "first_occurrence": db_report.first_occurrence
-                                                .strftime("%Y-%m-%d"),
+                                .strftime("%Y-%m-%d"),
                             "count": sum_today,
                             "type": db_report.type,
                             "level": level,
@@ -105,18 +108,19 @@ class FedmsgNotify(Action):
             q_yesterday = (
                 db.session
                 .query(Problem.id.label("y_problem_id"),
-                       func.sum(ReportHistoryDaily.count).label("sum_yesterday"))
+                       func.sum(ReportHistoryDaily.unique).label("sum_yesterday"))
                 .join(Report)
                 .outerjoin(ReportHistoryDaily)
                 .filter(ReportHistoryDaily.day < cmdline.date)
                 .group_by(Problem.id)
                 .subquery()
                 )
+
             # Sum of counts until today
             q_today = (
                 db.session
                 .query(Problem.id.label("t_problem_id"),
-                       func.sum(ReportHistoryDaily.count).label("sum_today"))
+                       func.sum(ReportHistoryDaily.unique).label("sum_today"))
                 .join(Report)
                 .outerjoin(ReportHistoryDaily)
                 .filter(ReportHistoryDaily.day <= cmdline.date)
@@ -153,10 +157,13 @@ class FedmsgNotify(Action):
                         if web.webfaf_installed():
                             msg["url"] = web.reverse("problems.item",
                                                      problem_id=db_problem.id)
+
+
                         fedmsg.publish(
                             topic="problem.threshold{0}".format(level),
                             modname='faf',
                             msg=msg)
+
 
     def tweak_cmdline_parser(self, parser):
         def valid_date(s):
