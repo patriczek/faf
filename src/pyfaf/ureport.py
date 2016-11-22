@@ -447,10 +447,9 @@ def save_attachment(db, attachment):
 
     elif atype == "centos-mantisbt":
         from pyfaf.attachment_type import attachementType
+        from pprint import pprint
 
-        if reportbug:
-            log.debug("Skipping existing attachment")
-            return
+        #pprint(attachementType)
 
         type = attachementType[atype]
         at = type(db=db, attachment=attachment, report=report)

@@ -107,6 +107,7 @@ class Mantis(BugTracker):
         self.log_debug(u"Downloading bug #{0}".format(bug_id))
         self._connect()
         bug = self.mc.mc_issue_get(self.user, self.password, bug_id)
+
         return self._save_bug(db, bug)
 
     def _preprocess_bug(self, bug):

@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<SOAP-ENV:Envelope xmlns:SOAP-ENV="http://schemas.xmlsoap.org/soap/envelope/" xmlns:ns1="http://futureware.biz/mantisconnect" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:SOAP-ENC="http://schemas.xmlsoap.org/soap/encoding/" SOAP-ENV:encodingStyle="http://schemas.xmlsoap.org/soap/encoding/"><SOAP-ENV:Body><ns1:mc_issue_getResponse><return xsi:type="ns1:IssueData"><id xsi:type="xsd:integer">11519</id><view_state xsi:type="ns1:ObjectRef"><id xsi:type="xsd:integer">10</id><name xsi:type="xsd:string">public</name></view_state><last_updated xsi:type="xsd:dateTime">2016-09-27T15:00:38+00:00</last_updated><project xsi:type="ns1:ObjectRef"><id xsi:type="xsd:integer">25</id><name xsi:type="xsd:string">Buildsys</name></project><category xsi:type="xsd:string">Ci.centos.org Ecosystem Testing</category><priority xsi:type="ns1:ObjectRef"><id xsi:type="xsd:integer">30</id><name xsi:type="xsd:string">normal</name></priority><severity xsi:type="ns1:ObjectRef"><id xsi:type="xsd:integer">50</id><name xsi:type="xsd:string">minor</name></severity><status xsi:type="ns1:ObjectRef"><id xsi:type="xsd:integer">10</id><name xsi:type="xsd:string">new</name></status><reporter xsi:type="ns1:AccountData"><id xsi:type="xsd:integer">19233</id><name xsi:type="xsd:string">ndevos</name></reporter><summary xsi:type="xsd:string">add additional architecture repositories to sync-script/config for buildlogs and mirrors</summary><reproducibility xsi:type="ns1:ObjectRef"><id xsi:type="xsd:integer">100</id><name xsi:type="xsd:string">N/A</name></reproducibility><date_submitted xsi:type="xsd:dateTime">2016-09-27T15:00:38+00:00</date_submitted><sponsorship_total xsi:type="xsd:integer">0</sponsorship_total><handler xsi:type="ns1:AccountData"><id xsi:type="xsd:integer">17607</id><name xsi:type="xsd:string">bstinson</name></handler><projection xsi:type="ns1:ObjectRef"><id xsi:type="xsd:integer">10</id><name xsi:type="xsd:string">none</name></projection><eta xsi:type="ns1:ObjectRef"><id xsi:type="xsd:integer">10</id><name xsi:type="xsd:string">none</name></eta><resolution xsi:type="ns1:ObjectRef"><id xsi:type="xsd:integer">10</id><name xsi:type="xsd:string">open</name></resolution><description xsi:type="xsd:string">Hi Brian,&#13;
+&#13;
+could you add the c6/i686 repositories/tags for gluster-3.7, 3.8 and 3.9 to buildlogs and the mirrors?&#13;
+&#13;
+http://cbs.centos.org/repos/storage6-gluster-37-testing/ -&gt; buildlogs&#13;
+http://cbs.centos.org/repos/storage6-gluster-38-testing/ -&gt; buildlogs&#13;
+http://cbs.centos.org/repos/storage6-gluster-39-testing/ -&gt; buildlogs&#13;
+&#13;
+http://cbs.centos.org/repos/storage6-gluster-37-release/ -&gt; mirror&#13;
+http://cbs.centos.org/repos/storage6-gluster-38-release/ -&gt; mirror&#13;
+http://cbs.centos.org/repos/storage6-gluster-39-release/ -&gt; mirror&#13;
+&#13;
+We also build c7 packages for aarch64 and ppc64le. These can be synced to buildlogs and the mirrors as well (in case those architectures are available by default already). Upstream Gluster is committed to fix problems on those architectures, eventhough we do not have regular/automated testing for them.&#13;
+&#13;
+Thanks!&#13;
+Niels</description><attachments SOAP-ENC:arrayType="ns1:AttachmentData[0]" xsi:type="SOAP-ENC:Array"/><due_date xsi:nil="true" xsi:type="xsd:dateTime"/><monitors SOAP-ENC:arrayType="ns1:AccountData[0]" xsi:type="SOAP-ENC:Array"/><sticky xsi:type="xsd:boolean">false</sticky><tags SOAP-ENC:arrayType="ns1:ObjectRef[0]" xsi:type="SOAP-ENC:Array"/></return></ns1:mc_issue_getResponse></SOAP-ENV:Body></SOAP-ENV:Envelope>
+

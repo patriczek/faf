@@ -10,6 +10,14 @@ except ImportError:
 import logging
 
 import faftests
+import threading
+import BaseHTTPServer
+import urlparse
+import os
+import Queue
+import time
+import SOAPpy
+
 
 from pyfaf.config import config
 from pyfaf.bugtrackers import bugtrackers
@@ -29,6 +37,36 @@ from pyfaf.storage.report import Report, ContactEmail
 from pyfaf.storage.bugtracker import Bugtracker
 from pyfaf.storage.bugzilla import BzBug, BzUser
 
+'''
+def mc_issue_get(self):
+    filepath = 'sample_reports/mantis_response.xml'
+    response = None
+    with open(filepath, "r") as fp:
+        data = fp.read()
+        response = (data)
+    return response
+
+
+def kill(self):
+    """tell the server to quit"""
+    global quit
+    quit = 1
+
+
+class DummyHTTPServerThread(threading.Thread):
+
+    def __init__(self, port):
+        threading.Thread.__init__(self)
+
+        server = SOAPpy.Server.SOAPServer(("localhost", port))
+        server.registerFunction(mc_issue_get)
+        server.registerFunction(kill)
+
+        global quit
+        while not quit:
+            server.handle_request()
+        quit = 0
+'''
 
 class UreportTestCase(faftests.DatabaseCase):
     """
@@ -44,7 +82,9 @@ class UreportTestCase(faftests.DatabaseCase):
         self.basic_fixtures()
 
         tracker = Bugtracker(name="fedora-bugzilla")
+        mantisTracker = Bugtracker(name="centos-mantisbt")
         self.db.session.add(tracker)
+        self.db.session.add(mantisTracker)
 
         bzuser = BzUser(name="Fake user",
                         email="fake@example.org",
@@ -82,6 +122,9 @@ class UreportTestCase(faftests.DatabaseCase):
         with open("sample_reports/bugzilla_attachment", "r") as file:
             self.bugzilla_attachment = json.load(file)
 
+        with open("sample_reports/centos_attachment", "r") as file:
+            self.centos_attachement = json.load(file)
+
         with open("sample_reports/comment_attachment", "r") as file:
             self.comment_attachment = json.load(file)
 
@@ -90,6 +133,46 @@ class UreportTestCase(faftests.DatabaseCase):
 
         with open("sample_reports/url_attachment", "r") as file:
             self.url_attachment = json.load(file)
+
+    '''
+    def test_centos_attachment_saving(self):
+        """
+        Check if bugzilla attachment is added to report.
+        """
+
+        save(self.db, self.sample_reports['ureport2'])
+        report = self.db.session.query(Report).first()
+
+        # update hash locally
+        reporthash = report.hashes[0].hash
+        centos_attachment = self.centos_attachement
+        centos_attachment["bthash"] = reporthash
+
+        class MockBugtracker(object):
+            def download_bug_to_storage(db, bug_id):
+                return self.bug
+
+        bugtrackers["centos-mantis"] = MockBugtracker()
+        port = 53135
+
+        t = DummyHTTPServerThread(port)
+        try:
+            t.start()
+            time.sleep(1)
+
+            save_attachment(self.db, centos_attachment)
+
+        finally:
+            server = SOAPpy.Client.SOAPProxy('127.0.0.1:{0}'.format(port))
+            server.kill()
+
+        t.join(2)
+
+        if t.isAlive():
+            os.abort()
+
+        self.assertEqual(len(report.bz_bugs), 1)
+    '''
 
     def test_ureport_validation(self):
         """
@@ -138,7 +221,8 @@ class UreportTestCase(faftests.DatabaseCase):
 
         save_attachment(self.db, bz_attachment)
         self.assertEqual(len(report.bz_bugs), 1)
-
+    '''
+    '''
     def test_attachment_type_allowed(self):
         config["ureport.acceptattachments"] = "only_this"
 
