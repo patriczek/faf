@@ -301,6 +301,15 @@ def save_ureport2(db, ureport, create_component=False, timestamp=None, count=1):
         db_monthly.unique += 1
     db_monthly.count += count
 
+    try:
+        from pyfaf.saveplugins import saveType
+        plugin = saveType['RHAccount']
+
+        p = plugin(db=db, ureport=ureport, db_osrelease=db_osrelease, db_report=db_report, day=day)
+        p.process()
+    except:
+        pass
+
     osplugin.save_ureport(db, db_report, ureport["os"], ureport["packages"],
                           count=count)
     problemplugin.save_ureport(db, db_report, ureport["problem"], count=count)
