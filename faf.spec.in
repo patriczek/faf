@@ -104,6 +104,13 @@ Requires: %{name} = %{faf_version}
 %description attachment-mantisbt
 A plugin for %{name} saving mantis attachment.
 
+%package attachment-url
+Summary: %{name}'s url plugin
+Requires: %{name} = %{faf_version}
+
+%description attachment-url
+A plugin for %{name} saving url attachment.
+
 
 %package problem-coredump
 Summary: %{name}'s coredump plugin
@@ -799,6 +806,9 @@ fi
 
 %files attachment-email
 %{python_sitelib}/pyfaf/attachmenttypes/email.py*
+
+%files attachment-url
+%{python_sitelib}/pyfaf/attachmenttypes/url.py*
 
 %files problem-coredump
 %config(noreplace) %{_sysconfdir}/faf/plugins/coredump.conf
