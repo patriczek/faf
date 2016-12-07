@@ -90,6 +90,13 @@ Requires: python-dateutil
 %description webui
 A WebUI rewrite
 
+%package attachment-comment
+Summary: %{name}'s comment plugin
+Requires: %{name} = %{faf_version}
+
+%description attachment-comment
+A plugin for %{name} saving comment attachment.
+
 %package attachment-email
 Summary: %{name}'s email plugin
 Requires: %{name} = %{faf_version}
@@ -809,6 +816,10 @@ fi
 
 %files attachment-url
 %{python_sitelib}/pyfaf/attachmenttypes/url.py*
+
+%files attachment-comment
+%{python_sitelib}/pyfaf/attachmenttypes/comment.py*
+
 
 %files problem-coredump
 %config(noreplace) %{_sysconfdir}/faf/plugins/coredump.conf
