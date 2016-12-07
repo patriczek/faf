@@ -18,7 +18,6 @@
 
 import datetime
 
-from pyfaf.bugtrackers import bugtrackers
 from pyfaf.checker import (Checker,
                            DictChecker,
                            IntChecker,
@@ -29,41 +28,31 @@ from pyfaf.config import config
 from pyfaf.opsys import systems
 from pyfaf.problemtypes import problemtypes
 from pyfaf.queries import (get_arch_by_name,
-                           get_bz_bug,
                            get_reportbz_by_major_version,
                            get_component_by_name,
-                           get_contact_email,
                            get_history_day,
                            get_history_month,
                            get_history_week,
                            get_osrelease,
-                           get_mantis_bug,
                            get_report,
-                           get_report_contact_email,
                            get_reportarch,
                            get_reportreason,
                            get_reportosrelease,
                            get_reportbz)
 from pyfaf.storage import (Arch,
-                           ContactEmail,
                            OpSysComponent,
                            OpSysRelease,
                            Report,
-                           ReportBz,
                            ReportArch,
-                           ReportComment,
-                           ReportContactEmail,
                            ReportHash,
                            ReportHistoryDaily,
                            ReportHistoryMonthly,
                            ReportHistoryWeekly,
                            ReportOpSysRelease,
-                           ReportMantis,
                            ReportReason,
-                           ReportURL,
                            column_len)
 from pyfaf.ureport_compat import ureport1to2
-from sqlalchemy.exc import IntegrityError
+from pyfaf.attachmenttypes import attachmentType
 
 log = log.getChildLogger(__name__)
 
@@ -395,150 +384,10 @@ def save_attachment(db, attachment):
     if not report:
         raise FafError("Report for given bthash not found")
 
-    if atype in ["rhbz", "fedora-bugzilla", "rhel-bugzilla"]:
-        bug_id = int(attachment["data"])
-
-        reportbug = (db.session.query(ReportBz)
-                     .filter(
-                         (ReportBz.report_id == report.id) &
-                         (ReportBz.bzbug_id == bug_id)
-                     )
-                     .first())
-
-        if reportbug:
-            log.debug("Skipping existing attachment")
-            return
-
-        bug = get_bz_bug(db, bug_id)
-        if not bug:
-            if atype in bugtrackers:
-                # download from bugtracker identified by atype
-                tracker = bugtrackers[atype]
-
-                if not tracker.installed(db):
-                    raise FafError("Bugtracker used in this attachment"
-                                   " is not installed")
-
-                bug = tracker.download_bug_to_storage(db, bug_id)
-            elif atype == "rhbz":
-                # legacy value
-                # - we need to guess the bugtracker:
-                # either fedora-bugzilla or rhel-bugzilla,
-                # former is more probable
-                for possible_tracker in ["fedora-bugzilla", "rhel-bugzilla"]:
-                    if possible_tracker not in bugtrackers:
-                        continue
-
-                    tracker = bugtrackers[possible_tracker]
-                    if not tracker.installed(db):
-                        continue
-
-                    bug = tracker.download_bug_to_storage(db, bug_id)
-                    if bug:
-                        break
-
-        if bug:
-            new = ReportBz()
-            new.report = report
-            new.bzbug = bug
-            db.session.add(new)
-            db.session.flush()
-        else:
-            log.error("Failed to fetch bug #{0} from '{1}'"
-                      .format(bug_id, atype))
-
-    elif atype == "centos-mantisbt":
-        bug_id = int(attachment["data"])
-
-        reportbug = (db.session.query(ReportMantis)
-                     .filter(
-                         (ReportMantis.report_id == report.id) &
-                         (ReportMantis.mantisbug_id == bug_id))
-                     .first())
-
-        if reportbug:
-            log.debug("Skipping existing attachment")
-            return
-
-        bug = get_mantis_bug(db, bug_id)
-        if not bug:
-            if atype in bugtrackers:
-                # download from bugtracker identified by atype
-                tracker = bugtrackers[atype]
-
-                if not tracker.installed(db):
-                    raise FafError("Bugtracker used in this attachment"
-                                   " is not installed")
-
-                bug = tracker.download_bug_to_storage(db, bug_id)
-
-        if bug:
-            new = ReportMantis()
-            new.report = report
-            new.mantisbug = bug
-            db.session.add(new)
-            db.session.flush()
-        else:
-            log.error("Failed to fetch bug #{0} from '{1}'"
-                      .format(bug_id, atype))
-
-    elif atype == "comment":
-        comment = ReportComment()
-        comment.report = report
-        comment.text = attachment["data"]
-        comment.saved = datetime.datetime.utcnow()
-        db.session.add(comment)
-        db.session.flush()
-
-    elif atype == "email":
-        db_contact_email = get_contact_email(db, attachment["data"])
-        if db_contact_email is None:
-            db_contact_email = ContactEmail()
-            db_contact_email.email_address = attachment["data"]
-            db.session.add(db_contact_email)
-
-            db_report_contact_email = ReportContactEmail()
-            db_report_contact_email.contact_email = db_contact_email
-            db_report_contact_email.report = report
-            db.session.add(db_report_contact_email)
-        else:
-            db_report_contact_email = \
-                get_report_contact_email(db, db_contact_email.id, report.id)
-            if db_report_contact_email is None:
-                db_report_contact_email = ReportContactEmail()
-                db_report_contact_email.contact_email = db_contact_email
-                db_report_contact_email.report = report
-                db.session.add(db_report_contact_email)
-
-        try:
-            db.session.flush()
-        except IntegrityError:
-            raise FafError("Email address already assigned to the report")
-
-    elif atype == "url":
-        url = attachment["data"]
-
-        # 0ne URL can be attached to many Reports, but every reports must
-        # have unique url's
-        db_url = (db.session.query(ReportURL)
-                  .filter(ReportURL.url == url)
-                  .filter(ReportURL.report_id == report.id)
-                  .first())
-
-        if db_url:
-            log.debug("Skipping existing URL")
-            return
-
-        db_url = ReportURL()
-        db_url.report = report
-        db_url.url = url
-        db_url.saved = datetime.datetime.utcnow()
-
-        try:
-            db.session.flush()
-        except IntegrityError:
-            raise FafError("Unable to save URL")
-
+    if atype in attachmentType.keys():
+        ato = attachmentType[atype]
+        at_instance = ato(attachment=attachment, db=db, report=report, atype=atype)
+        at_instance.process()
     else:
         log.warning("Unknown attachment type")
 

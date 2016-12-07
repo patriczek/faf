@@ -1,5 +1,6 @@
 SUBDIRS = \
     actions \
+    attachmenttypes \
     bugtrackers \
     celery_tasks \
     opsys \

@@ -52,6 +52,7 @@ AC_CONFIG_FILES([
     src/pyfaf/bugtrackers/Makefile
     src/pyfaf/celery_tasks/Makefile
     src/pyfaf/opsys/Makefile
+    src/pyfaf/attachmenttypes/Makefile
     src/pyfaf/problemtypes/Makefile
     src/pyfaf/repos/Makefile
     src/pyfaf/solutionfinders/Makefile

@@ -624,6 +624,9 @@ fi
 %{python_sitelib}/pyfaf/actions/releasemod.py*
 %{python_sitelib}/pyfaf/actions/match_unknown_packages.py*
 
+%dir %{python_sitelib}/pyfaf/attachmenttypes
+%{python_sitelib}/pyfaf/attachmenttypes/__init__.py*
+
 
 %dir %{python_sitelib}/pyfaf/bugtrackers
 %{python_sitelib}/pyfaf/bugtrackers/__init__.py*
