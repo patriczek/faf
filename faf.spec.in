@@ -90,6 +90,14 @@ Requires: python-dateutil
 %description webui
 A WebUI rewrite
 
+%package attachment-mantisbt
+Summary: %{name}'s mantisbt plugin
+Requires: %{name} = %{faf_version}
+
+%description attachment-mantisbt
+A plugin for %{name} saving mantis attachment.
+
+
 %package problem-coredump
 Summary: %{name}'s coredump plugin
 Requires: %{name} = %{faf_version}
@@ -778,6 +786,9 @@ fi
 # /var/spool/faf
 %dir %attr(0770, faf, faf) %{_localstatedir}/spool/faf/dumpdirs
 %dir %attr(0770, faf, faf) %{_localstatedir}/spool/faf/openid_store
+
+%files attachment-mantisbt
+%{python_sitelib}/pyfaf/attachmenttypes/mantisbt.py*
 
 %files problem-coredump
 %config(noreplace) %{_sysconfdir}/faf/plugins/coredump.conf
