@@ -90,6 +90,13 @@ Requires: python-dateutil
 %description webui
 A WebUI rewrite
 
+%package attachment-email
+Summary: %{name}'s email plugin
+Requires: %{name} = %{faf_version}
+
+%description attachment-email
+A plugin for %{name} saving email attachment.
+
 %package attachment-mantisbt
 Summary: %{name}'s mantisbt plugin
 Requires: %{name} = %{faf_version}
@@ -789,6 +796,9 @@ fi
 
 %files attachment-mantisbt
 %{python_sitelib}/pyfaf/attachmenttypes/mantisbt.py*
+
+%files attachment-email
+%{python_sitelib}/pyfaf/attachmenttypes/email.py*
 
 %files problem-coredump
 %config(noreplace) %{_sysconfdir}/faf/plugins/coredump.conf
