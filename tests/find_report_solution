@@ -33,8 +33,8 @@ class FindReportSolutionTestCase(faftests.DatabaseCase):
         self.db.session.add(spp)
 
     def test_solution(self):
-        build = Build(base_package_name='gcc', epoch=0, version='4.8.5', release='4.el7', semver='4.8.5', semrel='4.7.0')
-        build_old = Build(base_package_name='gcc', epoch=0, version='4.8.3', release='4.el7', semver='4.8.3', semrel='4.6.0')
+        build = Build(base_package_name='gcc', epoch=0, version='4.8.5', release='4.fc20', semver='4.8.5', semrel='4.7.0')
+        build_old = Build(base_package_name='gcc', epoch=0, version='4.8.3', release='4.fc20', semver='4.8.3', semrel='4.6.0')
         self.db.session.add(build)
         self.db.session.add(build_old)
 

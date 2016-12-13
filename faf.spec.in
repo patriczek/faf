@@ -863,9 +863,6 @@ fi
 %config(noreplace) %{_sysconfdir}/faf/plugins/fedora.conf
 %{python_sitelib}/pyfaf/opsys/fedora.py*
 
-%files opsys-rhel
-%{python_sitelib}/pyfaf/opsys/rhel.py*
-
 %files action-save-reports
 %config(noreplace) %{_sysconfdir}/faf/plugins/save-reports.conf
 %{python_sitelib}/pyfaf/actions/save_reports.py*

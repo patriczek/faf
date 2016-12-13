@@ -3,8 +3,8 @@
 ,   "reporter": {   "name": "satyr"
                 ,   "version": "0.19.5.g3eb4"
                 }
-,   "os": {   "name": "rhel"
-          ,   "version": "7.2"
+,   "os": {   "name": "fedora"
+          ,   "version": "20"
           ,   "architecture": "x86_64"
           ,   "cpe": "cpe:/o:redhat:enterprise_linux:7.2:GA:workstation"
           }
